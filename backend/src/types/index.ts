@@ -6,6 +6,9 @@ export interface IUser extends Document {
   _id: ObjectId;
   name: string;
   email: string;
+  isEmailVerified: boolean;
+  emailVerificationToken?: string;
+  emailVerificationExpires?: Date;
   password: string;
   avatar?: string;
   isPremium: boolean;
@@ -125,11 +128,6 @@ export interface ApiResponse<T = any> {
     total?: number;
     totalPages?: number;
   };
-}
-
-// Request Types
-export interface AuthenticatedRequest extends Request {
-  user?: IUser;
 }
 
 // Authentication Types

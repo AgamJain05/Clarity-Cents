@@ -47,7 +47,33 @@ export default function AuthScreen() {
     
     if (!success) {
       console.log('🟦 LOGIN ERROR: Login failed');
-      Alert.alert('Login Failed', 'Invalid email or password');
+      // Check if it's an email verification issue
+      try {
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: formData.email, password: formData.password }),
+        });
+        const data = await response.json();
+        
+        if (data.emailVerificationRequired) {
+          Alert.alert(
+            'Email Verification Required', 
+            'Please verify your email address before logging in. Check your inbox for the verification email.',
+            [
+              { text: 'OK' },
+              { 
+                text: 'Resend Email', 
+                onPress: () => handleResendVerification() 
+              }
+            ]
+          );
+        } else {
+          Alert.alert('Login Failed', 'Invalid email or password');
+        }
+      } catch (error) {
+        Alert.alert('Login Failed', 'Invalid email or password');
+      }
     } else {
       console.log('🟦 LOGIN SUCCESS: Login completed successfully');
     }
@@ -72,6 +98,36 @@ export default function AuthScreen() {
     const success = await register(formData.name, formData.email, formData.password);
     if (!success) {
       Alert.alert('Registration Failed', 'User with this email already exists');
+    } else {
+      Alert.alert(
+        'Registration Successful!', 
+        'Please check your email and click the verification link to complete your registration.',
+        [{ text: 'OK', onPress: () => setMode('login') }]
+      );
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!formData.email) {
+      Alert.alert('Error', 'Please enter your email address');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email }),
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        Alert.alert('Verification Email Sent', 'Please check your email for the verification link.');
+      } else {
+        Alert.alert('Error', 'Failed to send verification email');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to send verification email');
     }
   };
 

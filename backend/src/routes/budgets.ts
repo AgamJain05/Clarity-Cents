@@ -5,7 +5,7 @@ import { asyncHandler } from '../middleware/errorHandler';
 
 const router = express.Router();
 
-// Get all budgets for user
+// Get all budgets for user in app
 router.get('/', asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const budgets = await BudgetCategory.find({ 
     userId: req.user?.userId,

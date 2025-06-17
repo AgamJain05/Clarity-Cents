@@ -1,8 +1,12 @@
+import dotenv from 'dotenv';
+
+// Load environment variables FIRST, before any other imports
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import rateLimit from 'express-rate-limit';
 
@@ -17,7 +21,16 @@ import userRoutes from './routes/users';
 import { authenticateToken } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
 
-dotenv.config();
+// Debug environment loading
+console.log('🔍 DOTENV DEBUG - Checking all environment variables:');
+console.log('🔍 NODE_ENV:', process.env.NODE_ENV);
+console.log('🔍 PORT:', process.env.PORT);
+console.log('🔍 MONGODB_URI:', process.env.MONGODB_URI ? 'SET' : 'NOT SET');
+console.log('🔍 EMAIL_HOST:', process.env.EMAIL_HOST);
+console.log('🔍 EMAIL_PORT:', process.env.EMAIL_PORT);
+console.log('🔍 EMAIL_USER:', process.env.EMAIL_USER);
+console.log('🔍 EMAIL_PASS:', process.env.EMAIL_PASS ? 'SET' : 'NOT SET');
+console.log('🔍 EMAIL_FROM:', process.env.EMAIL_FROM);
 
 const app = express();
 

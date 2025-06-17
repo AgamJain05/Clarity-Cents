@@ -136,6 +136,28 @@ class ApiService {
     });
   }
 
+  // Email verification methods
+  async verifyEmail(token: string) {
+    return await this.request('/auth/verify-email', {
+      method: 'POST',
+      body: { token },
+    });
+  }
+
+  async resendVerification(email: string) {
+    return await this.request('/auth/resend-verification', {
+      method: 'POST',
+      body: { email },
+    });
+  }
+
+  async resetPassword(token: string, password: string) {
+    return await this.request('/auth/reset-password', {
+      method: 'POST',
+      body: { token, password },
+    });
+  }
+
   // User methods
   async getUserProfile() {
     return await this.request('/users/profile');

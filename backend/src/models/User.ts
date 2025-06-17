@@ -21,6 +21,18 @@ const userSchema = new Schema<IUser>({
       'Please provide a valid email address'
     ]
   },
+  isEmailVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerificationToken: {
+    type: String,
+    select: false
+  },
+  emailVerificationExpires: {
+    type: Date,
+    select: false
+  },
   password: {
     type: String,
     required: [true, 'Password is required'],
