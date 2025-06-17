@@ -12,41 +12,9 @@ class EmailService {
   private transporter: nodemailer.Transporter;
 
   constructor() {
-    // Debug environment variables
-    console.log('🔧 EMAIL DEBUG - Environment variables:');
-    console.log('🔧 EMAIL_HOST:', process.env.EMAIL_HOST);
-    console.log('🔧 EMAIL_PORT:', process.env.EMAIL_PORT);
-    console.log('🔧 EMAIL_USER:', process.env.EMAIL_USER ? `SET (${process.env.EMAIL_USER})` : 'NOT SET');
-    console.log('🔧 EMAIL_PASS:', process.env.EMAIL_PASS ? `SET (length: ${process.env.EMAIL_PASS.length})` : 'NOT SET');
-    console.log('🔧 EMAIL_FROM:', process.env.EMAIL_FROM);
-    
-    // Debug actual values being passed to transporter
-    const authConfig = {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    };
-    console.log('🔧 AUTH CONFIG:', {
-      user: authConfig.user ? `"${authConfig.user}"` : 'undefined',
-      pass: authConfig.pass ? `"${authConfig.pass.substring(0, 4)}..."` : 'undefined',
-      userType: typeof authConfig.user,
-      passType: typeof authConfig.pass,
-      userEmpty: authConfig.user === '',
-      passEmpty: authConfig.pass === ''
-    });
-
-    // Check for common credential issues
+    // Validate email configuration
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.error('❌ MISSING EMAIL CREDENTIALS!');
-      console.error('EMAIL_USER:', process.env.EMAIL_USER ? 'SET' : 'MISSING');
-      console.error('EMAIL_PASS:', process.env.EMAIL_PASS ? 'SET' : 'MISSING');
-    }
-
-    if (process.env.EMAIL_USER && process.env.EMAIL_USER.trim() === '') {
-      console.error('❌ EMAIL_USER is empty string!');
-    }
-
-    if (process.env.EMAIL_PASS && process.env.EMAIL_PASS.trim() === '') {
-      console.error('❌ EMAIL_PASS is empty string!');
+      console.error('❌ Email credentials not configured. Check .env file.');
     }
 
     const transportConfig = {
@@ -75,12 +43,10 @@ class EmailService {
 
   private async verifyConnection() {
     try {
-      console.log('🔧 Testing email connection...');
       await this.transporter.verify();
-      console.log('✅ Email connection verified successfully!');
+      console.log('✅ Email service initialized successfully');
     } catch (error) {
-      console.error('❌ Email connection failed:', error);
-      console.error('❌ This is why emails will fail to send');
+      console.error('❌ Email service initialization failed:', error);
     }
   }
 
@@ -94,17 +60,7 @@ class EmailService {
         text: options.text,
       };
 
-      console.log('📧 Attempting to send email...');
-      console.log('📧 To:', options.to);
-      console.log('📧 From:', mailOptions.from);
-      console.log('📧 Subject:', options.subject);
-      
-      // Check transporter auth before sending
-      const transporterOptions = this.transporter.options as any;
-      console.log('📧 Transporter auth at send time:', {
-        user: transporterOptions.auth?.user ? 'SET' : 'NOT SET',
-        pass: transporterOptions.auth?.pass ? 'SET' : 'NOT SET'
-      });
+      console.log('📧 Sending email to:', options.to);
       
       const result = await this.transporter.sendMail(mailOptions);
       console.log('📧 Email sent successfully:', result.messageId);

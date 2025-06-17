@@ -138,10 +138,17 @@ class ApiService {
 
   // Email verification methods
   async verifyEmail(token: string) {
-    return await this.request('/auth/verify-email', {
+    const response = await this.request('/auth/verify-email', {
       method: 'POST',
       body: { token },
     });
+
+    // If verification includes a login token, save it
+    if (response.success && response.data?.token) {
+      await this.setToken(response.data.token);
+    }
+
+    return response;
   }
 
   async resendVerification(email: string) {

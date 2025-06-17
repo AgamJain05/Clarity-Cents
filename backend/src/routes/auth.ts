@@ -147,8 +147,14 @@ router.post('/login', [
   }
 
   // Check if email is verified
+  console.log('🟢 BACKEND LOGIN STEP 3: Checking email verification status...');
+  console.log('🟢 User email:', user.email);
+  console.log('🟢 User isEmailVerified:', user.isEmailVerified);
+  console.log('🟢 User emailVerificationToken:', user.emailVerificationToken);
+  console.log('🟢 User emailVerificationExpires:', user.emailVerificationExpires);
+  
   if (!user.isEmailVerified) {
-    console.log('🟢 BACKEND LOGIN ERROR: Email not verified');
+    console.log('🟢 BACKEND LOGIN ERROR: Email not verified for user:', user.email);
     res.status(401).json({
       success: false,
       message: 'Please verify your email address before logging in. Check your inbox for the verification email.',
@@ -156,6 +162,8 @@ router.post('/login', [
     });
     return;
   }
+
+  console.log('🟢 BACKEND LOGIN STEP 3.5: Email verification check passed');
 
   console.log('🟢 BACKEND LOGIN STEP 4: Comparing passwords...');
   console.log('🟢 Provided password:', password);
@@ -371,6 +379,12 @@ router.post('/verify-email', [
   }
 
   console.log('📧 EMAIL VERIFICATION STEP 3: Verifying user email');
+  console.log('📧 Before verification - User:', {
+    email: user.email,
+    isEmailVerified: user.isEmailVerified,
+    emailVerificationToken: user.emailVerificationToken,
+    emailVerificationExpires: user.emailVerificationExpires
+  });
 
   // Update user as verified
   user.isEmailVerified = true;
@@ -379,6 +393,21 @@ router.post('/verify-email', [
   await user.save();
 
   console.log('📧 EMAIL VERIFICATION STEP 4: User email verified successfully');
+  console.log('📧 After verification - User:', {
+    email: user.email,
+    isEmailVerified: user.isEmailVerified,
+    emailVerificationToken: user.emailVerificationToken,
+    emailVerificationExpires: user.emailVerificationExpires
+  });
+
+  // Double-check by querying the user again from database
+  const verifiedUser = await User.findById(user._id);
+  console.log('📧 Double-check from database - User:', {
+    email: verifiedUser?.email,
+    isEmailVerified: verifiedUser?.isEmailVerified,
+    emailVerificationToken: verifiedUser?.emailVerificationToken,
+    emailVerificationExpires: verifiedUser?.emailVerificationExpires
+  });
 
   // Generate JWT token for immediate login
   const authToken = (jwt.sign as any)(
@@ -401,6 +430,7 @@ router.post('/verify-email', [
   res.json({
     success: true,
     message: 'Email verified successfully! You are now logged in.',
+    email: user.email, // Add email at top level for easy access
     data: {
       user: userResponse,
       token: authToken

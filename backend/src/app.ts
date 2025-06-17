@@ -21,16 +21,7 @@ import userRoutes from './routes/users';
 import { authenticateToken } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
 
-// Debug environment loading
-console.log('🔍 DOTENV DEBUG - Checking all environment variables:');
-console.log('🔍 NODE_ENV:', process.env.NODE_ENV);
-console.log('🔍 PORT:', process.env.PORT);
-console.log('🔍 MONGODB_URI:', process.env.MONGODB_URI ? 'SET' : 'NOT SET');
-console.log('🔍 EMAIL_HOST:', process.env.EMAIL_HOST);
-console.log('🔍 EMAIL_PORT:', process.env.EMAIL_PORT);
-console.log('🔍 EMAIL_USER:', process.env.EMAIL_USER);
-console.log('🔍 EMAIL_PASS:', process.env.EMAIL_PASS ? 'SET' : 'NOT SET');
-console.log('🔍 EMAIL_FROM:', process.env.EMAIL_FROM);
+// Environment loaded successfully
 
 const app = express();
 

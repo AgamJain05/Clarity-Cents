@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Eye, EyeOff, Mail, Lock, User, DollarSign } from 'lucide-react-native';
 import { useAuth } from '../context/AuthContext';
 
-type AuthMode = 'login' | 'register' | 'forgot-password';
+type AuthMode = 'login' | 'register' | 'forgot-password' | 'email-verification';
 
 export default function AuthScreen() {
   const { login, register, resetPassword, state } = useAuth();
@@ -28,6 +28,7 @@ export default function AuthScreen() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
   const handleLogin = async () => {
     console.log('🟦 LOGIN STEP 1: handleLogin called with:', { 
@@ -99,16 +100,15 @@ export default function AuthScreen() {
     if (!success) {
       Alert.alert('Registration Failed', 'User with this email already exists');
     } else {
-      Alert.alert(
-        'Registration Successful!', 
-        'Please check your email and click the verification link to complete your registration.',
-        [{ text: 'OK', onPress: () => setMode('login') }]
-      );
+      // Store the email and switch to verification screen
+      setRegisteredEmail(formData.email);
+      setMode('email-verification');
     }
   };
 
   const handleResendVerification = async () => {
-    if (!formData.email) {
+    const emailToUse = registeredEmail || formData.email;
+    if (!emailToUse) {
       Alert.alert('Error', 'Please enter your email address');
       return;
     }
@@ -117,7 +117,7 @@ export default function AuthScreen() {
       const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/resend-verification`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email }),
+        body: JSON.stringify({ email: emailToUse }),
       });
       const data = await response.json();
       
@@ -194,28 +194,71 @@ export default function AuthScreen() {
               {mode === 'login' && 'Welcome back! Sign in to continue.'}
               {mode === 'register' && 'Create your account to get started.'}
               {mode === 'forgot-password' && 'Enter your email to reset password.'}
+              {mode === 'email-verification' && 'Check your email to verify your account.'}
             </Text>
           </View>
 
+
+
           {/* Form */}
           <View style={styles.form}>
-            {mode === 'register' && (
-              <View style={styles.inputContainer}>
-                <View style={styles.inputWrapper}>
-                  <User size={20} color="#8E8E93" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Full Name"
-                    value={formData.name}
-                    onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
-                    autoCapitalize="words"
-                    autoCorrect={false}
-                  />
+            
+            {/* Email Verification Screen */}
+            {mode === 'email-verification' && (
+              <View style={styles.verificationContainer}>
+                <View style={styles.emailSentContainer}>
+                  <Mail size={48} color="#007AFF" />
+                  <Text style={styles.emailSentTitle}>Email Sent!</Text>
+                  <Text style={styles.emailSentMessage}>
+                    We've sent a verification email to:
+                  </Text>
+                  <Text style={styles.emailAddress}>{registeredEmail}</Text>
+                  <Text style={styles.emailSentInstructions}>
+                    Click the verification link in your email to activate your account, then return here to sign in.
+                  </Text>
                 </View>
+
+                <TouchableOpacity
+                  style={styles.resendButton}
+                  onPress={handleResendVerification}
+                  disabled={state.isLoading}
+                >
+                  {state.isLoading ? (
+                    <ActivityIndicator color="#007AFF" size="small" />
+                  ) : (
+                    <Text style={styles.resendButtonText}>Resend Verification Email</Text>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.continueButton}
+                  onPress={() => setMode('login')}
+                >
+                  <Text style={styles.continueButtonText}>Continue to Sign In</Text>
+                </TouchableOpacity>
               </View>
             )}
 
-            <View style={styles.inputContainer}>
+            {/* Regular form fields - hidden during email verification */}
+            {mode !== 'email-verification' && (
+              <>
+                {mode === 'register' && (
+                  <View style={styles.inputContainer}>
+                    <View style={styles.inputWrapper}>
+                      <User size={20} color="#8E8E93" style={styles.inputIcon} />
+                      <TextInput
+                        style={styles.textInput}
+                        placeholder="Full Name"
+                        value={formData.name}
+                        onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
+                        autoCapitalize="words"
+                        autoCorrect={false}
+                      />
+                    </View>
+                  </View>
+                )}
+
+                <View style={styles.inputContainer}>
               <View style={styles.inputWrapper}>
                 <Mail size={20} color="#8E8E93" style={styles.inputIcon} />
                 <TextInput
@@ -301,13 +344,15 @@ export default function AuthScreen() {
               )}
             </TouchableOpacity>
 
-            {/* Demo Credentials */}
-            {mode === 'login' && (
-              <View style={styles.demoContainer}>
-                <Text style={styles.demoTitle}>Demo Credentials:</Text>
-                <Text style={styles.demoText}>Email: sarah.johnson@email.com</Text>
-                <Text style={styles.demoText}>Password: password123</Text>
-              </View>
+                {/* Demo Credentials */}
+                {mode === 'login' && (
+                  <View style={styles.demoContainer}>
+                    <Text style={styles.demoTitle}>Demo Credentials:</Text>
+                    <Text style={styles.demoText}>Email: sarah.johnson@email.com</Text>
+                    <Text style={styles.demoText}>Password: password123</Text>
+                  </View>
+                )}
+              </>
             )}
           </View>
 
@@ -464,6 +509,89 @@ const styles = StyleSheet.create({
   linkText: {
     fontSize: 14,
     color: '#007AFF',
+    fontWeight: '600',
+  },
+  // Email verification styles
+  verificationContainer: {
+    alignItems: 'center',
+  },
+  emailSentContainer: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 32,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#E5E5E7',
+  },
+  emailSentTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1C1C1E',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emailSentMessage: {
+    fontSize: 16,
+    color: '#8E8E93',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  emailAddress: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#007AFF',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  emailSentInstructions: {
+    fontSize: 14,
+    color: '#8E8E93',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  resendButton: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    height: 52,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#007AFF',
+    marginBottom: 16,
+    paddingHorizontal: 24,
+  },
+  resendButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#007AFF',
+  },
+  continueButton: {
+    backgroundColor: '#007AFF',
+    borderRadius: 12,
+    height: 52,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  continueButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  // Success banner styles
+  successBanner: {
+    backgroundColor: '#D4F7D4',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#34C759',
+  },
+  successBannerText: {
+    fontSize: 14,
+    color: '#1B5E20',
+    textAlign: 'center',
     fontWeight: '600',
   },
 });
