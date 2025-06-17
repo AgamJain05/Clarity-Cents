@@ -197,6 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: false,
       });
       console.log('🟡 AUTH CONTEXT STEP 6: Authentication state cleared successfully');
+      console.log('🟡 AUTH CONTEXT STEP 7: Layout will handle routing to login page');
     } catch (error) {
       console.error('🟡 AUTH CONTEXT ERROR: Logout error:', error);
       // Even if there's an error, clear the auth state
@@ -206,6 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: false,
       });
       console.log('🟡 AUTH CONTEXT STEP 6 (ERROR): Authentication state cleared after error');
+      console.log('🟡 AUTH CONTEXT STEP 7 (ERROR): Layout will handle routing to login page');
     }
   };
   const updateProfile = async (updates: Partial<User>): Promise<void> => {

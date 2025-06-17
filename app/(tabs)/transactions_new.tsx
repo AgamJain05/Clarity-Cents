@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, Filter, Plus, Coffee, Car, ShoppingBag, Film, Chrome as Home, Utensils, Trash2 } from 'lucide-react-native';
+import { Search, Filter, Plus, Coffee, Car, ShoppingBag, Film, Chrome as Home, Utensils, Trash2, Heart, GraduationCap, MapPin, Sparkles, Gift, Zap } from 'lucide-react-native';
 import { useAppContext } from '@/context/AppContext';
 import AddTransactionModal from '@/components/AddTransactionModal';
 
@@ -19,11 +19,21 @@ const categoryIcons: { [key: string]: any } = {
   'Shopping': ShoppingBag,
   'Entertainment': Film,
   'Housing': Home,
-  'Income': Coffee,
-  'Utilities': Coffee,
-  'Healthcare': Coffee,
-  'Education': Coffee,
+  'Utilities': Zap,
+  'Healthcare': Heart,
+  'Education': GraduationCap,
+  'Travel': MapPin,
+  'Personal Care': Sparkles,
+  'Gifts': Gift,
   'Other': Coffee,
+  // Income categories
+  'Salary': Coffee,
+  'Freelance': Coffee,
+  'Investment': Coffee,
+  'Business': Coffee,
+  'Rental': Home,
+  'Gift': Gift,
+  'Other Income': Coffee,
 };
 
 export default function Transactions() {
@@ -72,11 +82,21 @@ export default function Transactions() {
       'Shopping': '#FF3B30',
       'Entertainment': '#AF52DE',
       'Housing': '#00C896',
-      'Income': '#00C896',
-      'Utilities': '#FF9500',
+      'Utilities': '#FFD60A',
       'Healthcare': '#34C759',
       'Education': '#5856D6',
+      'Travel': '#32D74B',
+      'Personal Care': '#BF5AF2',
+      'Gifts': '#FF2D92',
       'Other': '#8E8E93',
+      // Income categories
+      'Salary': '#00C896',
+      'Freelance': '#5AC8FA',
+      'Investment': '#FFCC02',
+      'Business': '#FF6B35',
+      'Rental': '#00C896',
+      'Gift': '#FF2D92',
+      'Other Income': '#8E8E93',
     };
     return colors[category] || '#8E8E93';
   };

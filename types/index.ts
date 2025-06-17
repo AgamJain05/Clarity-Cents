@@ -91,3 +91,32 @@ export interface AuthContextType {
   deleteAccount: () => Promise<void>;
   resetPassword: (email: string) => Promise<boolean>;
 }
+
+// Define standardized categories for both transactions and budgets
+export const EXPENSE_CATEGORIES = [
+  'Food & Dining',
+  'Transportation', 
+  'Shopping',
+  'Entertainment',
+  'Housing',
+  'Utilities',
+  'Healthcare',
+  'Education',
+  'Travel',
+  'Personal Care',
+  'Gifts',
+  'Other',
+] as const;
+
+export const INCOME_CATEGORIES = [
+  'Salary',
+  'Freelance',
+  'Investment',
+  'Business',
+  'Rental',
+  'Gift',
+  'Other Income',
+] as const;
+
+export type ExpenseCategory = typeof EXPENSE_CATEGORIES[number];
+export type IncomeCategory = typeof INCOME_CATEGORIES[number];

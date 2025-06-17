@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { X, DollarSign, Calendar, Tag, Building } from 'lucide-react-native';
 import { useAppContext } from '../context/AppContext';
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, ExpenseCategory, IncomeCategory } from '../types';
 
 const { width } = Dimensions.get('window');
 
@@ -20,28 +21,18 @@ interface AddTransactionModalProps {
   onClose: () => void;
 }
 
-const categories = [
-  'Food & Dining',
-  'Transportation', 
-  'Shopping',
-  'Entertainment',
-  'Housing',
-  'Utilities',
-  'Healthcare',
-  'Education',
-  'Income',
-  'Other',
-];
-
 export default function AddTransactionModal({ visible, onClose }: AddTransactionModalProps) {
   const { addTransaction } = useAppContext();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     merchant: '',
     amount: '',
-    category: 'Food & Dining',
+    category: EXPENSE_CATEGORIES[0] as string,
     type: 'expense' as 'expense' | 'income',
   });
+
+  // Get appropriate categories based on transaction type
+  const availableCategories = formData.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
   const handleSubmit = async () => {
     if (!formData.merchant.trim()) {
@@ -98,10 +89,20 @@ export default function AddTransactionModal({ visible, onClose }: AddTransaction
     setFormData({
       merchant: '',
       amount: '',
-      category: 'Food & Dining',
+      category: EXPENSE_CATEGORIES[0],
       type: 'expense',
     });
     onClose();
+  };
+
+  // Update category when transaction type changes
+  const handleTypeChange = (newType: 'expense' | 'income') => {
+    const newCategories = newType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+    setFormData({ 
+      ...formData, 
+      type: newType,
+      category: newCategories[0] // Reset to first category of new type
+    });
   };
 
   return (
@@ -139,7 +140,7 @@ export default function AddTransactionModal({ visible, onClose }: AddTransaction
                   styles.typeButton,
                   formData.type === 'expense' && styles.typeButtonActive,
                 ]}
-                onPress={() => setFormData({ ...formData, type: 'expense' })}
+                onPress={() => handleTypeChange('expense')}
               >
                 <Text
                   style={[
@@ -155,7 +156,7 @@ export default function AddTransactionModal({ visible, onClose }: AddTransaction
                   styles.typeButton,
                   formData.type === 'income' && styles.typeButtonActive,
                 ]}
-                onPress={() => setFormData({ ...formData, type: 'income' })}
+                onPress={() => handleTypeChange('income')}
               >
                 <Text
                   style={[
@@ -207,7 +208,7 @@ export default function AddTransactionModal({ visible, onClose }: AddTransaction
             <Text style={styles.sectionTitle}>Category</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesScroll}>
               <View style={styles.categoriesContainer}>
-                {categories.map((category) => (
+                {availableCategories.map((category) => (
                   <TouchableOpacity
                     key={category}
                     style={[

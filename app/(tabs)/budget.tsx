@@ -12,8 +12,9 @@ import {
   FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Settings, TrendingUp, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, Utensils, Car, ShoppingBag, Film, Chrome as Home, Zap, X, Palette, DollarSign, Calculator } from 'lucide-react-native';
+import { Plus, Settings, TrendingUp, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, Utensils, Car, ShoppingBag, Film, Chrome as Home, Zap, X, Palette, DollarSign, Calculator, Heart, GraduationCap, MapPin, Sparkles, Gift } from 'lucide-react-native';
 import { useAppContext } from '@/context/AppContext';
+import { EXPENSE_CATEGORIES } from '@/types';
 
 const { width } = Dimensions.get('window');
 
@@ -24,11 +25,11 @@ const iconMap = {
   'Entertainment': Film,
   'Housing': Home,
   'Utilities': Zap,
-  'Healthcare': Plus,
-  'Education': Plus,
-  'Travel': Car,
-  'Personal Care': Plus,
-  'Gifts': Plus,
+  'Healthcare': Heart,
+  'Education': GraduationCap,
+  'Travel': MapPin,
+  'Personal Care': Sparkles,
+  'Gifts': Gift,
   'Other': Plus,
 };
 
@@ -473,6 +474,24 @@ export default function Budget() {
               onChangeText={setNewCategoryName}
               placeholder="e.g., Healthcare, Travel"
             />
+            
+            {/* Suggested Categories */}
+            <Text style={styles.modalLabel}>Suggested Categories</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.suggestedCategoriesScroll}>
+              <View style={styles.suggestedCategoriesContainer}>
+                {EXPENSE_CATEGORIES.filter(cat => 
+                  !state.budgetCategories.some(existing => existing.name === cat)
+                ).map((category) => (
+                  <TouchableOpacity
+                    key={category}
+                    style={styles.suggestedCategoryButton}
+                    onPress={() => setNewCategoryName(category)}
+                  >
+                    <Text style={styles.suggestedCategoryText}>{category}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
             
             <Text style={styles.modalLabel}>{selectedPeriod} Budget</Text>
             <TextInput
@@ -992,5 +1011,26 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginTop: 16,
     fontStyle: 'italic',
+  },
+  suggestedCategoriesScroll: {
+    marginBottom: 16,
+  },
+  suggestedCategoriesContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 4,
+  },
+  suggestedCategoryButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: '#E3F2FD',
+    borderWidth: 1,
+    borderColor: '#007AFF',
+  },
+  suggestedCategoryText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#007AFF',
   },
 });

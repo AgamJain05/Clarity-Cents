@@ -4,6 +4,7 @@ import AuthScreen from '../components/AuthScreen';
 import { AppProvider } from '../context/AppContext';
 import { View, ActivityIndicator } from 'react-native';
 import { useSegments, useRouter } from 'expo-router';
+import { useEffect } from 'react';
 
 function RootLayoutNav() {
   const { state } = useAuth();
@@ -18,8 +19,23 @@ function RootLayoutNav() {
     timestamp: new Date().toISOString()
   });
 
-  // Check if user is on verification page
-  const isOnVerificationPage = segments[0] === 'verify-email';
+  // Handle routing based on authentication state
+  useEffect(() => {
+    if (!state.isLoading) {
+      const inAuthGroup = segments[0] === '(tabs)';
+      const onVerificationPage = segments[0] === 'verify-email';
+      
+      if (state.isAuthenticated && !inAuthGroup) {
+        // User is authenticated but not in protected routes, redirect to main app
+        console.log('🟠 LAYOUT: Redirecting authenticated user to main app');
+        router.replace('/(tabs)');
+      } else if (!state.isAuthenticated && (inAuthGroup || onVerificationPage)) {
+        // User is not authenticated but on protected routes or verification page, redirect to login
+        console.log('🟠 LAYOUT: Redirecting unauthenticated user to login');
+        router.replace('/');
+      }
+    }
+  }, [state.isAuthenticated, state.isLoading, segments, router]);
 
   if (state.isLoading) {
     console.log('🟠 LAYOUT: Showing loading screen');

@@ -16,12 +16,12 @@ import { router } from 'expo-router';
 const { width } = Dimensions.get('window');
 
 export default function Dashboard() {
-  const { state, getTotalSpent, getTotalIncome } = useAppContext();
+  const { state, getTotalSpent, getTotalIncome, getCategorySpending } = useAppContext();
   const [addTransactionModalVisible, setAddTransactionModalVisible] = useState(false);
   
   // Calculate actual budget usage from database data
   const totalBudgetAllocated = state.budgetCategories.reduce((sum, budget) => sum + budget.allocated, 0);
-  const totalBudgetSpent = state.budgetCategories.reduce((sum, budget) => sum + budget.spent, 0);
+  const totalBudgetSpent = state.budgetCategories.reduce((sum, budget) => sum + getCategorySpending(budget.name), 0);
   const budgetUsed = totalBudgetAllocated > 0 ? totalBudgetSpent / totalBudgetAllocated : 0;
   
   const totalSpent = getTotalSpent();
@@ -191,20 +191,24 @@ export default function Dashboard() {
         {(() => {
           // Find budget categories that are over 90% spent or completely spent
           const alertBudgets = state.budgetCategories.filter(budget => {
-            const percentageUsed = budget.allocated > 0 ? (budget.spent / budget.allocated) * 100 : 0;
+            const actualSpent = getCategorySpending(budget.name);
+            const percentageUsed = budget.allocated > 0 ? (actualSpent / budget.allocated) * 100 : 0;
             return percentageUsed >= 90;
           });
 
           if (alertBudgets.length === 0) return null;
 
           const mostOverspentBudget = alertBudgets.reduce((max, budget) => {
-            const maxPercentage = max.allocated > 0 ? (max.spent / max.allocated) * 100 : 0;
-            const currentPercentage = budget.allocated > 0 ? (budget.spent / budget.allocated) * 100 : 0;
+            const maxSpent = getCategorySpending(max.name);
+            const currentSpent = getCategorySpending(budget.name);
+            const maxPercentage = max.allocated > 0 ? (maxSpent / max.allocated) * 100 : 0;
+            const currentPercentage = budget.allocated > 0 ? (currentSpent / budget.allocated) * 100 : 0;
             return currentPercentage > maxPercentage ? budget : max;
           });
 
+          const actualSpent = getCategorySpending(mostOverspentBudget.name);
           const percentageUsed = mostOverspentBudget.allocated > 0 
-            ? (mostOverspentBudget.spent / mostOverspentBudget.allocated) * 100 
+            ? (actualSpent / mostOverspentBudget.allocated) * 100 
             : 0;
 
           return (
@@ -215,7 +219,7 @@ export default function Dashboard() {
               <View style={styles.alertContent}>
                 <Text style={styles.alertTitle}>{mostOverspentBudget.name} Budget Alert</Text>
                 <Text style={styles.alertMessage}>
-                  You've spent ${mostOverspentBudget.spent.toFixed(2)} of your ${mostOverspentBudget.allocated.toFixed(2)} {mostOverspentBudget.name.toLowerCase()} budget this month ({percentageUsed.toFixed(0)}%)
+                  You've spent ${actualSpent.toFixed(2)} of your ${mostOverspentBudget.allocated.toFixed(2)} {mostOverspentBudget.name.toLowerCase()} budget this month ({percentageUsed.toFixed(0)}%)
                 </Text>
               </View>
             </View>
