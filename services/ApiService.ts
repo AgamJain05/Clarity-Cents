@@ -1,6 +1,31 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
-const API_BASE_URL = __DEV__ ? 'http://localhost:5000/api' : 'https://your-production-api.com/api';
+// Different URLs for different platforms in development
+const getApiUrl = () => {
+  if (!__DEV__) {
+    return 'https://your-production-api.com/api';
+  }
+  
+  // Development URLs
+  if (Platform.OS === 'android') {
+    // For Android emulator, try 10.0.2.2 first, but also provide alternatives
+    // 10.0.2.2 - Standard Android emulator localhost mapping
+    // You might need to change this to your actual IP address if 10.0.2.2 doesn't work
+    const androidUrl = 'http://192.168.29.240:5000/api';
+    console.log('🤖 Android detected - using URL:', androidUrl);
+    console.log('💡 If connection fails, try changing to your computer\'s IP address');
+    return androidUrl;
+  } else if (Platform.OS === 'ios') {
+    // For iOS simulator, localhost works fine
+    return 'http://localhost:5000/api';
+  } else {
+    // For web, use localhost
+    return 'http://localhost:5000/api';
+  }
+};
+
+const API_BASE_URL = getApiUrl();
 
 // Storage keys
 const TOKEN_KEY = 'auth_token';
@@ -10,6 +35,7 @@ class ApiService {
 
   constructor() {
     this.baseURL = API_BASE_URL;
+    console.log(`🌐 API Service initialized with URL: ${this.baseURL} (Platform: ${Platform.OS})`);
   }
 
   // Get auth token from storage
@@ -47,6 +73,9 @@ class ApiService {
       const token = await this.getToken();
       const url = `${this.baseURL}${endpoint}`;
 
+      console.log(`🔗 API Request: ${options.method || 'GET'} ${url}`);
+      console.log(`📱 Platform: ${Platform.OS}`);
+
       const config: RequestInit = {
         headers: {
           'Content-Type': 'application/json',
@@ -58,18 +87,31 @@ class ApiService {
 
       if (options.body) {
         config.body = JSON.stringify(options.body);
+        console.log('📤 Request body:', JSON.stringify(options.body, null, 2));
       }
 
+      console.log('⏳ Making request...');
       const response = await fetch(url, config);
+      console.log(`✅ Response status: ${response.status} ${response.statusText}`);
+      
       const data = await response.json();
+      console.log('📥 Response data:', JSON.stringify(data, null, 2));
 
       if (!response.ok) {
+        console.error(`❌ Request failed: ${response.status} - ${data.message || 'Unknown error'}`);
         throw new Error(data.message || 'Request failed');
       }
 
       return data;
-    } catch (error) {
-      console.error('API Request Error:', error);
+    } catch (error: any) {
+      console.error('💥 API Request Error:', error);
+      console.error('🔍 Error details:', {
+        message: error?.message || 'Unknown error',
+        name: error?.name || 'Unknown',
+        stack: error?.stack || 'No stack trace',
+        url: `${this.baseURL}${endpoint}`,
+        platform: Platform.OS
+      });
       throw error;
     }
   }

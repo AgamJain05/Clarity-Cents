@@ -8,7 +8,9 @@ import {
   Modal,
   TextInput,
   Alert,
+  Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus, Target, Calendar, DollarSign, Zap, Chrome as Home, Plane, GraduationCap, Car, Trophy, X, Edit3, Trash2, TrendingUp, Clock, AlertCircle, CheckCircle2, Copy } from 'lucide-react-native';
 import { useAppContext } from '../../context/AppContext';
@@ -54,6 +56,11 @@ export default function Goals() {
   const [showContributeModal, setShowContributeModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
+  
+  // Date picker states
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [datePickerMode, setDatePickerMode] = useState<'add' | 'edit'>('add');
   
   // Form states
   const [newGoal, setNewGoal] = useState({
@@ -209,10 +216,50 @@ export default function Goals() {
     return date.toISOString().split('T')[0];
   };
 
+  const formatDateForDisplay = (dateString: string) => {
+    if (!dateString) return 'Select Date';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
   const getDateFromMonths = (months: number) => {
     const date = new Date();
     date.setMonth(date.getMonth() + months);
     return formatDateForInput(date);
+  };
+
+  const handleDatePickerOpen = (mode: 'add' | 'edit') => {
+    const currentDateString = mode === 'add' ? newGoal.targetDate : newGoal.targetDate;
+    if (currentDateString) {
+      setSelectedDate(new Date(currentDateString));
+    } else {
+      // Default to 1 year from now
+      const defaultDate = new Date();
+      defaultDate.setFullYear(defaultDate.getFullYear() + 1);
+      setSelectedDate(defaultDate);
+    }
+    setDatePickerMode(mode);
+    setShowDatePicker(true);
+  };
+
+  const handleDatePickerChange = (event: any, date?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    
+    if (date) {
+      setSelectedDate(date);
+      const formattedDate = formatDateForInput(date);
+      setNewGoal(prev => ({ ...prev, targetDate: formattedDate }));
+    }
+    
+    if (Platform.OS === 'ios' && event.type === 'dismissed') {
+      setShowDatePicker(false);
+    }
   };
 
   const applyTemplate = (template: typeof goalTemplates[0]) => {
@@ -517,13 +564,18 @@ export default function Goals() {
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Target Date *</Text>
-              <TextInput
-                style={styles.textInput}
-                value={newGoal.targetDate}
-                onChangeText={(text) => setNewGoal(prev => ({ ...prev, targetDate: text }))}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor="#8E8E93"
-              />
+              <TouchableOpacity
+                style={styles.datePickerButton}
+                onPress={() => handleDatePickerOpen('add')}
+              >
+                <Calendar size={20} color="#8E8E93" />
+                <Text style={[
+                  styles.datePickerText,
+                  !newGoal.targetDate && styles.datePickerPlaceholder
+                ]}>
+                  {formatDateForDisplay(newGoal.targetDate)}
+                </Text>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.inputGroup}>
@@ -599,13 +651,18 @@ export default function Goals() {
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Target Date *</Text>
-              <TextInput
-                style={styles.textInput}
-                value={newGoal.targetDate}
-                onChangeText={(text) => setNewGoal(prev => ({ ...prev, targetDate: text }))}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor="#8E8E93"
-              />
+              <TouchableOpacity
+                style={styles.datePickerButton}
+                onPress={() => handleDatePickerOpen('edit')}
+              >
+                <Calendar size={20} color="#8E8E93" />
+                <Text style={[
+                  styles.datePickerText,
+                  !newGoal.targetDate && styles.datePickerPlaceholder
+                ]}>
+                  {formatDateForDisplay(newGoal.targetDate)}
+                </Text>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.inputGroup}>
@@ -738,6 +795,17 @@ export default function Goals() {
           </ScrollView>
         </SafeAreaView>
       </Modal>
+
+      {/* Date Picker */}
+      {showDatePicker && (
+        <DateTimePicker
+          value={selectedDate}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleDatePickerChange}
+          minimumDate={new Date()}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -1207,5 +1275,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#1C1C1E',
     fontWeight: '600',
+  },
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    gap: 12,
+  },
+  datePickerText: {
+    fontSize: 16,
+    color: '#1C1C1E',
+    fontWeight: '500',
+    flex: 1,
+  },
+  datePickerPlaceholder: {
+    color: '#8E8E93',
   },
 });
