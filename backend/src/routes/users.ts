@@ -61,7 +61,7 @@ router.put('/profile', [
 
 // Update user preferences
 router.put('/preferences', [
-  body('currency').optional().isIn(['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR']).withMessage('Invalid currency'),
+  body('currency').optional().isIn(['USD', 'INR']).withMessage('Invalid currency'),
   body('notifications').optional().isBoolean().withMessage('Notifications must be boolean'),
   body('biometricAuth').optional().isBoolean().withMessage('Biometric auth must be boolean'),
   body('darkMode').optional().isBoolean().withMessage('Dark mode must be boolean'),
@@ -77,9 +77,15 @@ router.put('/preferences', [
     return;
   }
 
+  // Build the preferences update object
+  const preferencesUpdate: any = {};
+  Object.keys(req.body).forEach(key => {
+    preferencesUpdate[`preferences.${key}`] = req.body[key];
+  });
+
   const user = await User.findByIdAndUpdate(
     req.user?.userId,
-    { $set: { [`preferences.${Object.keys(req.body)[0]}`]: Object.values(req.body)[0] } },
+    { $set: preferencesUpdate },
     { new: true, runValidators: true }
   ).select('-password');
 

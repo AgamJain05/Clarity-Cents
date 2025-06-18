@@ -14,7 +14,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus, Settings, TrendingUp, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, Utensils, Car, ShoppingBag, Film, Chrome as Home, Zap, X, Palette, DollarSign, Calculator, Heart, GraduationCap, MapPin, Sparkles, Gift } from 'lucide-react-native';
 import { useAppContext } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { EXPENSE_CATEGORIES } from '@/types';
+import { formatCurrencySimple } from '@/utils/currencyFormatter';
 
 const { width } = Dimensions.get('window');
 
@@ -41,6 +43,7 @@ const colorOptions = [
 
 export default function Budget() {
   const { state, updateBudget, getCategorySpending, addBudgetCategory } = useAppContext();
+  const { state: authState } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState('Monthly');
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [addCategoryModalVisible, setAddCategoryModalVisible] = useState(false);
@@ -55,6 +58,9 @@ export default function Budget() {
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
   
   const periods = ['Weekly', 'Monthly', 'Yearly'];
+  
+  // Get user's currency preference
+  const userCurrency = authState.user?.preferences?.currency || 'USD';
   
   // Use data from context and recalculate spending
   const getPeriodMultiplier = () => {
@@ -189,7 +195,7 @@ export default function Budget() {
     // Check for high spending categories
     const sortedBySpending = [...budgetCategories].sort((a, b) => b.spent - a.spent);
     if (sortedBySpending.length > 0) {
-      insights.push(`• Highest spending: ${sortedBySpending[0].name} ($${sortedBySpending[0].spent.toFixed(2)})`);
+      insights.push(`• Highest spending: ${sortedBySpending[0].name} (${formatCurrencySimple(sortedBySpending[0].spent, userCurrency)})`);
     }
 
     // Check for unused budget
@@ -282,11 +288,11 @@ export default function Budget() {
           <Text style={styles.overviewTitle}>Budget Overview</Text>
           <View style={styles.overviewStats}>
             <View style={styles.overviewStat}>
-              <Text style={styles.overviewAmount}>${totalAllocated.toLocaleString()}</Text>
+              <Text style={styles.overviewAmount}>{formatCurrencySimple(totalAllocated, userCurrency)}</Text>
               <Text style={styles.overviewLabel}>Total Budget</Text>
             </View>
             <View style={styles.overviewStat}>
-              <Text style={styles.overviewAmount}>${totalSpent.toLocaleString()}</Text>
+              <Text style={styles.overviewAmount}>{formatCurrencySimple(totalSpent, userCurrency)}</Text>
               <Text style={styles.overviewLabel}>Total Spent</Text>
             </View>
             <View style={styles.overviewStat}>
@@ -294,7 +300,7 @@ export default function Budget() {
                 styles.overviewAmount,
                 { color: remainingBudget < 0 ? '#FF3B30' : '#00C896' }
               ]}>
-                ${Math.abs(remainingBudget).toLocaleString()}
+                {formatCurrencySimple(Math.abs(remainingBudget), userCurrency)}
               </Text>
               <Text style={styles.overviewLabel}>
                 {remainingBudget < 0 ? 'Over Budget' : 'Remaining'}
@@ -356,7 +362,7 @@ export default function Budget() {
                     <View style={styles.categoryDetails}>
                       <Text style={styles.categoryName}>{category.name}</Text>
                       <Text style={styles.categoryAmount}>
-                        ${category.spent} of ${category.allocated}
+                        {formatCurrencySimple(category.spent, userCurrency)} of {formatCurrencySimple(category.allocated, userCurrency)}
                       </Text>
                     </View>
                   </View>
@@ -441,7 +447,7 @@ export default function Budget() {
                 keyboardType="numeric"
               />
               <Text style={styles.modalNote}>
-                Current spending: ${getCategorySpending(selectedCategory.name).toFixed(2)} (monthly)
+                Current spending: {formatCurrencySimple(getCategorySpending(selectedCategory.name), userCurrency)} (monthly)
               </Text>
             </View>
           )}
@@ -546,7 +552,7 @@ export default function Budget() {
             <View style={styles.settingItem}>
               <DollarSign size={20} color="#007AFF" />
               <Text style={styles.settingLabel}>Monthly Income</Text>
-              <Text style={styles.settingValue}>${state.userProfile.monthlyIncome}</Text>
+              <Text style={styles.settingValue}>{formatCurrencySimple(state.userProfile.monthlyIncome, userCurrency)}</Text>
             </View>
             
             <View style={styles.settingItem}>
@@ -584,25 +590,25 @@ export default function Budget() {
             <View style={styles.rebalanceItem}>
               <Text style={styles.rebalanceCategory}>Housing</Text>
               <Text style={styles.rebalancePercentage}>30%</Text>
-              <Text style={styles.rebalanceAmount}>${(state.userProfile.monthlyIncome * 0.3).toFixed(0)}</Text>
+              <Text style={styles.rebalanceAmount}>{formatCurrencySimple(state.userProfile.monthlyIncome * 0.3, userCurrency)}</Text>
             </View>
             
             <View style={styles.rebalanceItem}>
               <Text style={styles.rebalanceCategory}>Transportation</Text>
               <Text style={styles.rebalancePercentage}>15%</Text>
-              <Text style={styles.rebalanceAmount}>${(state.userProfile.monthlyIncome * 0.15).toFixed(0)}</Text>
+              <Text style={styles.rebalanceAmount}>{formatCurrencySimple(state.userProfile.monthlyIncome * 0.15, userCurrency)}</Text>
             </View>
             
             <View style={styles.rebalanceItem}>
               <Text style={styles.rebalanceCategory}>Food & Dining</Text>
               <Text style={styles.rebalancePercentage}>12%</Text>
-              <Text style={styles.rebalanceAmount}>${(state.userProfile.monthlyIncome * 0.12).toFixed(0)}</Text>
+              <Text style={styles.rebalanceAmount}>{formatCurrencySimple(state.userProfile.monthlyIncome * 0.12, userCurrency)}</Text>
             </View>
             
             <View style={styles.rebalanceItem}>
               <Text style={styles.rebalanceCategory}>Utilities</Text>
               <Text style={styles.rebalancePercentage}>8%</Text>
-              <Text style={styles.rebalanceAmount}>${(state.userProfile.monthlyIncome * 0.08).toFixed(0)}</Text>
+              <Text style={styles.rebalanceAmount}>{formatCurrencySimple(state.userProfile.monthlyIncome * 0.08, userCurrency)}</Text>
             </View>
             
             <Text style={styles.rebalanceNote}>

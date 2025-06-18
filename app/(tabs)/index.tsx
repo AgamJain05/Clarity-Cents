@@ -10,14 +10,20 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DollarSign, TrendingUp, TrendingDown, TriangleAlert as AlertTriangle, Plus, ArrowRight } from 'lucide-react-native';
 import { useAppContext } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import AddTransactionModal from '@/components/AddTransactionModal';
 import { router } from 'expo-router';
+import { formatCurrencySimple } from '@/utils/currencyFormatter';
 
 const { width } = Dimensions.get('window');
 
 export default function Dashboard() {
   const { state, getTotalSpent, getTotalIncome, getCategorySpending } = useAppContext();
+  const { state: authState } = useAuth();
   const [addTransactionModalVisible, setAddTransactionModalVisible] = useState(false);
+  
+  // Get user's currency preference
+  const userCurrency = authState.user?.preferences?.currency || 'USD';
   
   // Calculate actual budget usage from database data
   const totalBudgetAllocated = state.budgetCategories.reduce((sum, budget) => sum + budget.allocated, 0);
@@ -54,13 +60,13 @@ export default function Dashboard() {
   const quickStats = [
     { 
       title: 'Total Balance', 
-      value: `$${state.totalBalance.toFixed(2)}`, 
+      value: formatCurrencySimple(state.totalBalance, userCurrency), 
       change: `${monthlyChange >= 0 ? '+' : ''}${monthlyChange.toFixed(1)}%`, 
       isPositive: monthlyChange >= 0 
     },
     { 
       title: 'This Month', 
-      value: `$${thisMonthSpent.toFixed(2)}`, 
+      value: formatCurrencySimple(thisMonthSpent, userCurrency), 
       change: (() => {
         // Calculate change compared to average monthly spending
         const averageMonthlySpent = totalSpent / 12; // Rough estimate
@@ -76,7 +82,7 @@ export default function Dashboard() {
     },
     { 
       title: 'Saved', 
-      value: `$${savedAmount.toFixed(2)}`, 
+      value: formatCurrencySimple(savedAmount, userCurrency), 
       change: (() => {
         // Calculate savings rate as percentage of income
         const savingsRate = thisMonthIncome > 0 ? (savedAmount / thisMonthIncome) * 100 : 0;
@@ -103,7 +109,7 @@ export default function Dashboard() {
         {/* Balance Card */}
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Current Balance</Text>
-          <Text style={styles.balanceAmount}>${state.totalBalance.toFixed(2)}</Text>
+                      <Text style={styles.balanceAmount}>{formatCurrencySimple(state.totalBalance, userCurrency)}</Text>
           <View style={styles.budgetProgress}>
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${budgetUsed * 100}%` }]} />
@@ -178,7 +184,7 @@ export default function Dashboard() {
                     styles.amountText,
                     { color: transaction.type === 'income' ? '#00C896' : '#1C1C1E' }
                   ]}>
-                    {transaction.type === 'income' ? '+' : ''}${Math.abs(transaction.amount).toFixed(2)}
+                    {transaction.type === 'income' ? '+' : ''}{formatCurrencySimple(Math.abs(transaction.amount), userCurrency)}
                   </Text>
                   <Text style={styles.transactionDate}>{transaction.date}</Text>
                 </View>
@@ -219,7 +225,7 @@ export default function Dashboard() {
               <View style={styles.alertContent}>
                 <Text style={styles.alertTitle}>{mostOverspentBudget.name} Budget Alert</Text>
                 <Text style={styles.alertMessage}>
-                  You've spent ${actualSpent.toFixed(2)} of your ${mostOverspentBudget.allocated.toFixed(2)} {mostOverspentBudget.name.toLowerCase()} budget this month ({percentageUsed.toFixed(0)}%)
+                  You've spent {formatCurrencySimple(actualSpent, userCurrency)} of your {formatCurrencySimple(mostOverspentBudget.allocated, userCurrency)} {mostOverspentBudget.name.toLowerCase()} budget this month ({percentageUsed.toFixed(0)}%)
                 </Text>
               </View>
             </View>

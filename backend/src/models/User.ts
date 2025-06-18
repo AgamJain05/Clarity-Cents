@@ -55,7 +55,7 @@ const userSchema = new Schema<IUser>({
     currency: {
       type: String,
       default: 'USD',
-      enum: ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR']
+      enum: ['USD', 'INR']
     },
     notifications: {
       type: Boolean,

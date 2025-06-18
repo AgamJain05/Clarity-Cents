@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -90,6 +90,19 @@ export default function Profile() {
     language: authState.user?.preferences.language || 'en',
   });
 
+  // Sync settings data with user preferences when they change
+  useEffect(() => {
+    if (authState.user?.preferences) {
+      setSettingsData({
+        notifications: authState.user.preferences.notifications || false,
+        biometricAuth: authState.user.preferences.biometricAuth || false,
+        darkMode: authState.user.preferences.darkMode || false,
+        currency: authState.user.preferences.currency || 'USD',
+        language: authState.user.preferences.language || 'en',
+      });
+    }
+  }, [authState.user?.preferences]);
+
   // Calculate user stats from app data
   const getUserStats = () => {
     const completedGoals = appState.goals.filter((goal: any) => goal.currentAmount >= goal.targetAmount).length;
@@ -173,10 +186,13 @@ export default function Profile() {
   const handleSaveSettings = async () => {
     try {
       setIsLoading(true);
+      console.log('💾 Saving settings data:', settingsData);
       await updatePreferences(settingsData);
+      console.log('💾 Settings saved successfully');
       setSettingsModal(false);
       Alert.alert('Success', 'Settings updated successfully');
     } catch (error) {
+      console.error('💾 Error saving settings:', error);
       Alert.alert('Error', 'Failed to update settings');
     } finally {
       setIsLoading(false);
@@ -525,7 +541,7 @@ export default function Profile() {
               <View style={styles.settingSection}>
                 <Text style={styles.sectionTitle}>Currency</Text>
                 <View style={styles.currencyContainer}>
-                  {['USD', 'EUR', 'GBP', 'JPY'].map((currency) => (
+                  {['USD', 'INR'].map((currency) => (
                     <TouchableOpacity
                       key={currency}
                       style={[
@@ -538,7 +554,7 @@ export default function Profile() {
                         styles.currencyText,
                         settingsData.currency === currency && styles.currencyTextSelected
                       ]}>
-                        {currency}
+                        {currency === 'USD' ? '$ USD' : '₹ INR'}
                       </Text>
                     </TouchableOpacity>
                   ))}

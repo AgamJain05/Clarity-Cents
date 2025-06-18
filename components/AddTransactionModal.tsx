@@ -12,7 +12,9 @@ import {
 } from 'react-native';
 import { X, DollarSign, Calendar, Tag, Building } from 'lucide-react-native';
 import { useAppContext } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, ExpenseCategory, IncomeCategory } from '../types';
+import { getCurrencySymbol } from '../utils/currencyFormatter';
 
 const { width } = Dimensions.get('window');
 
@@ -23,6 +25,7 @@ interface AddTransactionModalProps {
 
 export default function AddTransactionModal({ visible, onClose }: AddTransactionModalProps) {
   const { addTransaction } = useAppContext();
+  const { state: authState } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     merchant: '',
@@ -30,6 +33,10 @@ export default function AddTransactionModal({ visible, onClose }: AddTransaction
     category: EXPENSE_CATEGORIES[0] as string,
     type: 'expense' as 'expense' | 'income',
   });
+
+  // Get user's currency preference and symbol
+  const userCurrency = authState.user?.preferences?.currency || 'USD';
+  const currencySymbol = getCurrencySymbol(userCurrency);
 
   // Get appropriate categories based on transaction type
   const availableCategories = formData.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
@@ -174,7 +181,7 @@ export default function AddTransactionModal({ visible, onClose }: AddTransaction
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Amount</Text>
             <View style={styles.inputContainer}>
-              <DollarSign size={20} color="#8E8E93" />
+              <Text style={styles.currencySymbol}>{currencySymbol}</Text>
               <TextInput
                 style={styles.textInput}
                 placeholder="0.00"
@@ -331,6 +338,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#1C1C1E',
+  },
+  currencySymbol: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#8E8E93',
   },
   categoriesScroll: {
     marginHorizontal: -20,

@@ -231,16 +231,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       if (!state.user) return;
 
+      console.log('🔄 AuthContext: Updating preferences:', preferences);
       const response = await ApiService.updateUserPreferences(preferences);
+      console.log('🔄 AuthContext: Response from API:', response);
       
       if (response.success && response.data?.user) {
+        console.log('🔄 AuthContext: Updated user data:', response.data.user);
         setState(prev => ({
           ...prev,
           user: response.data.user,
         }));
+        console.log('🔄 AuthContext: State updated successfully');
       }
     } catch (error) {
-      console.error('Update preferences error:', error);
+      console.error('🔄 AuthContext: Update preferences error:', error);
+      throw error;
     }
   };
   const resetPassword = async (email: string): Promise<boolean> => {

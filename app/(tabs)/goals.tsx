@@ -12,7 +12,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus, Target, Calendar, DollarSign, Zap, Chrome as Home, Plane, GraduationCap, Car, Trophy, X, Edit3, Trash2, TrendingUp, Clock, AlertCircle, CheckCircle2, Copy } from 'lucide-react-native';
 import { useAppContext } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { Goal } from '../../types';
+import { formatCurrencySimple } from '../../utils/currencyFormatter';
 
 const goalIcons = {
   'Savings': Zap,
@@ -42,6 +44,10 @@ const goalTemplates = [
 
 export default function Goals() {
   const { state, addGoal, updateGoal, deleteGoal, addToGoal } = useAppContext();
+  const { state: authState } = useAuth();
+  
+  // Get user's currency preference
+  const userCurrency = authState.user?.preferences?.currency || 'USD';
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -272,13 +278,13 @@ export default function Goals() {
           <View style={styles.overviewStats}>
             <View style={styles.overviewStat}>
               <Text style={styles.overviewAmount}>
-                ${totalCurrentAmount.toLocaleString()}
+                {formatCurrencySimple(totalCurrentAmount, userCurrency)}
               </Text>
               <Text style={styles.overviewLabel}>Saved</Text>
             </View>
             <View style={styles.overviewStat}>
               <Text style={styles.overviewAmount}>
-                ${totalTargetAmount.toLocaleString()}
+                {formatCurrencySimple(totalTargetAmount, userCurrency)}
               </Text>
               <Text style={styles.overviewLabel}>Target</Text>
             </View>
@@ -400,7 +406,7 @@ export default function Goals() {
                 <View style={styles.goalProgress}>
                   <View style={styles.progressInfo}>
                     <Text style={styles.progressAmount}>
-                      ${goal.currentAmount.toLocaleString()} of ${goal.targetAmount.toLocaleString()}
+                      {formatCurrencySimple(goal.currentAmount, userCurrency)} of {formatCurrencySimple(goal.targetAmount, userCurrency)}
                     </Text>
                     <Text style={styles.progressPercentage}>
                       {Math.round(progress)}%
@@ -423,7 +429,7 @@ export default function Goals() {
                   <View style={styles.goalStat}>
                     <DollarSign size={14} color="#8E8E93" />
                     <Text style={styles.statText}>
-                      ${remaining.toLocaleString()} remaining
+                      {formatCurrencySimple(remaining, userCurrency)} remaining
                     </Text>
                   </View>
                   <View style={styles.goalStat}>
@@ -671,19 +677,19 @@ export default function Goals() {
                 <View style={styles.goalSummaryRow}>
                   <Text style={styles.goalSummaryLabel}>Current Amount:</Text>
                   <Text style={styles.goalSummaryValue}>
-                    ${selectedGoal.currentAmount.toLocaleString()}
+                    {formatCurrencySimple(selectedGoal.currentAmount, userCurrency)}
                   </Text>
                 </View>
                 <View style={styles.goalSummaryRow}>
                   <Text style={styles.goalSummaryLabel}>Target Amount:</Text>
                   <Text style={styles.goalSummaryValue}>
-                    ${selectedGoal.targetAmount.toLocaleString()}
+                    {formatCurrencySimple(selectedGoal.targetAmount, userCurrency)}
                   </Text>
                 </View>
                 <View style={styles.goalSummaryRow}>
                   <Text style={styles.goalSummaryLabel}>Remaining:</Text>
                   <Text style={styles.goalSummaryValue}>
-                    ${(selectedGoal.targetAmount - selectedGoal.currentAmount).toLocaleString()}
+                    {formatCurrencySimple(selectedGoal.targetAmount - selectedGoal.currentAmount, userCurrency)}
                   </Text>
                 </View>
               </View>
@@ -721,7 +727,7 @@ export default function Goals() {
               >
                 <View style={styles.templateHeader}>
                   <Text style={styles.templateTitle}>{template.title}</Text>
-                  <Text style={styles.templateAmount}>${template.amount.toLocaleString()}</Text>
+                  <Text style={styles.templateAmount}>{formatCurrencySimple(template.amount, userCurrency)}</Text>
                 </View>
                 <View style={styles.templateDetails}>
                   <Text style={styles.templateCategory}>{template.category}</Text>

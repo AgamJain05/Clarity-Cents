@@ -66,6 +66,12 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="transactions_new"
+        options={{
+          href: null, // This hides the tab from navigation
+        }}
+      />
     </Tabs>
   );
 }
