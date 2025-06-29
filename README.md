@@ -123,34 +123,7 @@ const addTransaction = async (transaction) => {
 - **Actionable Insights**: Users see immediate value through spending analysis
 - **Behavioral Change**: Smart recommendations drive better financial decisions
 
-## 🎥 **Demo Video Setup**
 
-To add a demo video to this README, follow these steps:
-
-### **Option 1: GitHub Upload (Recommended)**
-1. Record your demo video (max 25MB for GitHub)
-2. Upload to your repository: `git add demo-video.mp4`
-3. Add to README:
-```markdown
-## 🎬 Demo Video
-![Demo Video](./demo-video.mp4)
-```
-
-### **Option 2: External Hosting**
-1. Upload to YouTube/Vimeo/Loom
-2. Add embedded link:
-```markdown
-## 🎬 Demo Video
-[![FinanceFlow Demo](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=VIDEO_ID)
-```
-
-### **Option 3: GIF Preview**
-1. Create a GIF using screen recording
-2. Upload to repository or use services like Giphy
-3. Embed directly:
-```markdown
-![App Demo](./demo.gif)
-```
 
 ## 📊 **Technical Metrics**
 
