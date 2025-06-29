@@ -1,7 +1,11 @@
 # 💰 FinanceFlow - Advanced Personal Finance Tracker
 
 > **A production-ready, full-stack financial management application showcasing modern development practices, intelligent budget balancing, and seamless user experience.**
+## 🎬 **Live Demo**
 
+![FinanceFlow Demo](./Demo.gif)
+
+*Showcasing smart budget balancing, real-time transaction tracking, and intelligent financial insights*
 ## 🎯 **Project Overview**
 
 FinanceFlow is a sophisticated personal finance tracking application that demonstrates expertise in **full-stack development**, **real-time data synchronization**, and **intelligent financial algorithms**. Built with modern technologies and best practices, this project showcases the ability to create complex, user-centric applications that solve real-world problems.
